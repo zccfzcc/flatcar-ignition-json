@@ -1,0 +1,45 @@
+passwd:
+  users:
+    - name: core
+      password_hash: $1$QG9xpger$lIEoix/7YCJ1dN3GM57xP1
+      ssh_authorized_keys:
+        - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDyyP4mO6LjTZHwdrFsIFgI+EUmSbdYXT3V9DEpDqGhZvuMjoG+q4+uxBqXVSN8CxlwqzWC1dgKppHNewifTqGoNVS77uSMxindCyZv3mULJMWmkgqEE8V/V49ggaZg+fraF1Ht78Q2CAy7X0sBiWybKXGYY0PIQnzTp5nDIl1XATg/80n0SCVuMWpX+gl96JT+YG1dJ7ltRkulMSmSpiZgR9k5gPj0Khp1znAtB+/rcMu/teOSMC1CwDY5pigqFuZO1TitnftyCm3C5VZybWanQ+b6gW0SxauZnPVqY0IR9SsHUEJvkHrJ9Y+iDDb/0sQG/hb6XU92OTAs5NM1M9Fn core@localhost"
+      groups:
+        - wheel
+        - plugdev
+        - sudo
+        - docker
+      shell: /bin/bash
+networkd:
+  units:
+    - name: static.network
+      contents: |
+        [Match]
+        Name=eno1
+
+        [Network]
+        DHCP=no
+        DNS=172.16.1.41
+        DNS=172.16.51.241
+        Address=172.16.4.23
+        Gateway=172.16.1.1
+
+coreos:
+  update:
+    reboot-strategy: off
+  units:
+    - name: settimezone.service
+      command: start
+      content: |
+        [Unit]
+        Description=Set the time zone
+        [Service]
+        ExecStart=/usr/bin/timedatectl set-timezone Asia/Shanghai
+        RemainAfterExit=yes
+        Type=oneshot
+    - name: "docker.service"
+      drop-ins:
+        - name: "50-insecure-registry.conf"
+          content: |
+            [Service]
+            Environment=DOCKER_OPTS='--insecure-registry="drepo.wehgc.com"'
